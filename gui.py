@@ -117,6 +117,7 @@ class gui():
         self.toggle()
         self.list_res.delete(0, END)
         self.window.update()
+        self.big_accounts = []
 
         for n in millions():
             if self.cancel_requested:
@@ -143,17 +144,16 @@ class gui():
         kw = "{} {} Followers -tag -explore".format(self.txt.get(), n)
         logging.info('searching: {}'.format(kw))
         serp = googleSearch.search(kw, self.url_to_search)
-        self.big_accounts = []
         for url in serp:
             self.list_res.insert(0, url)
             if url.count('/') == 4:
                 logging.info('url: {}'.format(url))
                 self.list_res.itemconfig(0, foreground="white", bg="green")
-                m = regex.match(".*gram.com/([^/])*.*", self.url_to_search)
+                m = regex.match(".*gram.com/(.*)/", url)
                 if m:
                     account = m.groups()[0]
                     logging.info('account: {}'.format(account))
-                    self.big_accounts.append((account, n,))
+                    self.big_accounts.append( (account, n) )
             else:
                 self.list_res.itemconfig(0, foreground="black", bg="white")
             if self.cancel_requested:
@@ -167,7 +167,6 @@ class gui():
             self.window.update()
             if len(self.big_accounts) > 99:
                 break
-
 
 
     def mainloop(self):
