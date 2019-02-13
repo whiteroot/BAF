@@ -1,4 +1,5 @@
 requests
+retrying
 tldextract
 retrying
 unidecode

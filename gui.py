@@ -11,7 +11,7 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter.ttk import Progressbar
 
-import googleSearch
+from googleSearch import googleScraper
 import settings
 from utils import get_tld_cache_file
 
@@ -143,7 +143,8 @@ class gui():
     def searchMillion(self, n):
         kw = "{} {} Followers -tag -explore".format(self.txt.get(), n)
         logging.info('searching: {}'.format(kw))
-        serp = googleSearch.search(kw, self.url_to_search)
+        google_scraper = googleScraper()
+        serp = google_scraper.search(kw, self.url_to_search)
         for url in serp:
             self.list_res.insert(0, url)
             if url.count('/') == 4:
