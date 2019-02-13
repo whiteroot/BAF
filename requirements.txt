@@ -1,0 +1,6 @@
+requests
+tldextract
+retrying
+unidecode
+lxml
+regex
