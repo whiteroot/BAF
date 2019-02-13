@@ -52,13 +52,13 @@ class gui():
         self.txt.focus()
 
         self.search_btn = Button(self.window, text="Search", command=lambda inst=self: inst.search())
-        self.search_btn.grid(column=1, row=2, padx=20, pady=5)
-
-        self.cancel_btn = Button(self.window, text="Cancel", command=lambda inst=self: inst.cancel())
-        self.cancel_btn.grid(column=2, row=2, padx=20, pady=5)
+        self.search_btn.grid(column=2, row=1, pady=5)
 
         self.export_btn = Button(self.window, text="Export", command=lambda inst=self: inst.export())
-        self.export_btn.grid(column=3, row=2, padx=20, pady=5)
+        self.export_btn.grid(column=1, row=2, pady=5)
+
+        self.cancel_btn = Button(self.window, text="Cancel", command=lambda inst=self: inst.cancel())
+        self.cancel_btn.grid(column=2, row=2, pady=5)
 
         self.list_res = Listbox(self.window, width=int(tk_width * 0.9), height=int(tk_height * 0.85))
         self.list_res.grid(column=1, row=3, padx=20, pady=3, columnspan=3)
@@ -73,11 +73,10 @@ class gui():
 
     def export(self):
         if len(self.big_accounts) == 0:
-            messagebox.showinfo("Info", "No mail to export!")
+            messagebox.showinfo("Info", "No account to export!")
         else:
             temp_dir = tempfile.gettempdir()
-            dir_sep = os.sep
-            export_file = temp_dir + os.sep + 'export.csv'
+            export_file = "{}{}baf.{}.csv".format(temp_dir, os.sep, self.txt.get().replace(' ', '-'))
             logging.debug('export file : %s', export_file)
             with open(export_file, 'w') as f:
                 f.write('account')
