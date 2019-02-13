@@ -18,7 +18,7 @@ from utils import get_tld_cache_file
 
 def millions():
     for i in range(1,3):
-        for j in range(9):
+        for j in range(10):
             yield "{}.{}m".format(i, j)
 
 
@@ -141,7 +141,7 @@ class gui():
 
 
     def searchMillion(self, n):
-        kw = "{} {} -tag -explore".format(self.txt.get(), n)
+        kw = "{} {} Followers -tag -explore".format(self.txt.get(), n)
         logging.info('searching: {}'.format(kw))
         serp = googleSearch.search(kw, self.url_to_search)
         self.big_accounts = []
