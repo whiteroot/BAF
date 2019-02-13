@@ -15,6 +15,8 @@ _googleURL = 'https://google.fr/'
 def search2(googleURL, nextLinksNeeded):
     r = requests.get(googleURL, headers=settings.headers)
     logging.info('[{}] {}'.format(r.status_code, googleURL))
+    if r.status_code >= 500:
+        raise Exception(r.status_code, r.text)
     tree = html.fromstring(r.content)
 
     links = []
@@ -38,12 +40,8 @@ def search2(googleURL, nextLinksNeeded):
     return links, next_links
 
 def search(_searched_string, on_site):
-    if _searched_string == '':
-        logging.fatal('missing searched string')
-        sys.exit(2)
-    if on_site != '':
-        _2points = '%' + str(hex(ord(':')))[2:].upper()
-        _searched_string += ' site' + _2points + on_site
+    _2points = '%' + str(hex(ord(':')))[2:].upper()
+    _searched_string += ' site' + _2points + on_site
     _searched_string = _searched_string.replace(' ','+')
 
     url = _googleURL + 'search?q=' + _searched_string
