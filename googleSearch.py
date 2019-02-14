@@ -1,6 +1,5 @@
-# coding: utf8
- 
 import time
+import random
 import sys
 import requests
 from unidecode import unidecode
@@ -8,13 +7,17 @@ from lxml import html
 import logging
 import settings
 
-_googleURL = 'https://google.fr/'
+_googleURL = 'https://google.com/'
 
 # ===================================================================================
 
 def search2(googleURL, nextLinksNeeded):
     r = requests.get(googleURL, headers=settings.headers)
     logging.info('[{}] {}'.format(r.status_code, googleURL))
+    # be nice with google...
+    sleeping_time = float(random.randint(3, 9))
+    logging.debug('sleeping {} seconds...'.format(sleeping_time))
+    time.sleep(sleeping_time)
     if r.status_code >= 500:
         raise Exception(r.status_code, r.text)
     tree = html.fromstring(r.content)

@@ -13,5 +13,5 @@ except:
     print('on other distros, you are supposed to know how to do it ;)')
     sys.exit(1)
 
-cmde = 'pip3 install -r requirements.txt'
+cmde = 'python3 -m pip install --user -r requirements.txt'
 p = subprocess.run(cmde.split())

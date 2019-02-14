@@ -1,9 +1,5 @@
-# coding: utf8
-
 import os
 import logging
-import random
-import time
 import tempfile
 
 import regex
@@ -18,7 +14,8 @@ from utils import get_tld_cache_file
 
 def millions():
     for i in range(1,3):
-        for j in range(10):
+        yield "{}m".format(i)
+        for j in range(1,10):
             yield "{}.{}m".format(i, j)
 
 
@@ -53,6 +50,9 @@ class gui():
 
         self.search_btn = Button(self.window, text="Search", command=lambda inst=self: inst.search())
         self.search_btn.grid(column=2, row=1, pady=5)
+
+        self.lbl_count = Label(self.window, text="")
+        self.lbl_count.grid(column=3, row=1, padx=20, pady=5)
 
         self.export_btn = Button(self.window, text="Export", command=lambda inst=self: inst.export())
         self.export_btn.grid(column=1, row=2, pady=5)
@@ -144,27 +144,26 @@ class gui():
         kw = "{} {} Followers -tag -explore".format(self.txt.get(), n)
         logging.info('searching: {}'.format(kw))
         serp = googleSearch.search(kw, self.url_to_search)
+        cpt = 0
         for url in serp:
-            self.list_res.insert(0, url)
+            cpt += 1
             if url.count('/') == 4:
                 logging.info('url: {}'.format(url))
-                self.list_res.itemconfig(0, foreground="white", bg="green")
                 m = regex.match(".*gram.com/(.*)/", url)
                 if m:
                     account = m.groups()[0]
+                    self.list_res.insert(0, account)
+                    self.list_res.itemconfig(0, foreground="white", bg="blue")
                     logging.info('account: {}'.format(account))
                     self.big_accounts.append( (account, n) )
-            else:
-                self.list_res.itemconfig(0, foreground="black", bg="white")
+            self.pbar.step(100 / settings.nb_serp_results)
+            self.lbl_count['text'] = "{} account{} found".format(
+                    len(self.big_accounts),
+                    's' if len(self.big_accounts)>1 else '')
+            self.window.update()
             if self.cancel_requested:
                 logging.debug('cancel requested')
                 break
-            # be nice with google...
-            sleeping_time = float(random.randint(2, 9)) / 10
-            logging.debug('sleeping {} seconds...'.format(sleeping_time))
-            time.sleep(sleeping_time)
-            self.pbar.step(100 / settings.nb_serp_results)
-            self.window.update()
             if len(self.big_accounts) > 99:
                 break
 
