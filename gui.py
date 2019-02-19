@@ -98,11 +98,13 @@ class gui():
 
     def toggle(self):
         if self.search_btn['state'] == DISABLED:
+            logging.info('toggle ON')
             self.cancel_btn['state'] = DISABLED
             self.search_btn['state'] = NORMAL
             self.txt['state'] = NORMAL
             self.pbar.stop()
         else:
+            logging.info('toggle OFF')
             self.cancel_btn['state'] = NORMAL
             self.search_btn['state'] = DISABLED
             self.txt['state'] = DISABLED
@@ -117,6 +119,7 @@ class gui():
 
     def search(self):
         if self.txt.get() == '': return
+        self.cancel_requested = False
         self.toggle()
         self.list_res.delete(0, END)
         self.window.update()
@@ -125,7 +128,7 @@ class gui():
 
         for n in millions():
             if self.cancel_requested:
-                logging.debug('cancel requested')
+                logging.info('cancel requested')
                 break
             try:
                 self.lbl_info['text'] = "Searching accounts with {} followers".format(n)
@@ -137,12 +140,6 @@ class gui():
             self.window.update()
 
         logging.info('BIG ACCOUNTS FOUND: {}'.format(len(self.big_accounts)))
-
-        if self.cancel_requested:
-            self.cancel_requested = False
-        else:
-            self.toggle()
-        self.window.update()
 
 
     def searchMillion(self, n, google_scraper):
@@ -167,7 +164,7 @@ class gui():
                     's' if len(self.big_accounts)>1 else '')
             self.window.update()
             if self.cancel_requested:
-                logging.debug('cancel requested')
+                logging.info('cancel requested')
                 break
             if len(self.big_accounts) > 99:
                 break

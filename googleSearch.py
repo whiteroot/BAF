@@ -8,6 +8,7 @@ import logging
 import settings
 
 _googleURL = 'https://google.com/'
+time_cutter = 10
 
 # ===================================================================================
 
@@ -27,16 +28,21 @@ class GoogleScraper():
         else:
             sleeping_time = random.randint(self.pause, self.pause * 1.2)
             logging.info('sleeping {} seconds...'.format(sleeping_time))
-            for i in range(sleeping_time * 10):
-                time.sleep(0.1)
+            lbl_copy = self.gui.lbl_info['text']
+            deci_sec = sleeping_time * time_cutter
+            for i in range(deci_sec):
+                self.gui.lbl_info['text'] = "Waiting... %4.1fs" % (float(deci_sec - i) / 10)
                 self.gui.update()
-                if self.gui.cancel_requested: break
+                time.sleep(1.0 / time_cutter)
+                if self.gui.cancel_requested:
+                    self.gui.lbl_info['text'] = ''
+                    break
 
         if r.status_code >= 500:
             raise Exception(r.status_code, r.text)
-        tree = html.fromstring(r.content)
 
         links = []
+        tree = html.fromstring(r.content)
         res = tree.xpath('//div[@class="g"]/h3/a/@href')
         for link in res:
             logging.debug('google link #1 : %s' % link)
