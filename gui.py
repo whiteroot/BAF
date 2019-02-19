@@ -42,32 +42,32 @@ class gui():
         tk_height = cur_height / 20
 
         self.lbl_search = Label(self.window, text="Keywords")
-        self.lbl_search.grid(column=1, row=0, padx=20, pady=5)
+        self.lbl_search.grid(column=1, row=1, padx=20, pady=20)
 
-        self.txt = Entry(self.window, width=int(tk_width * 0.55))
-        self.txt.grid(column=1, row=1, padx=20, pady=10)
+        self.txt = Entry(self.window, width=int(tk_width * 0.5))
+        self.txt.grid(column=2, row=1, padx=20, pady=20)
         self.txt.focus()
 
         self.search_btn = Button(self.window, text="Search", command=lambda inst=self: inst.search())
-        self.search_btn.grid(column=2, row=1, pady=5)
-
-        self.lbl_count = Label(self.window, text="")
-        self.lbl_count.grid(column=3, row=1, padx=20, pady=5)
+        self.search_btn.grid(column=1, row=10, pady=5)
 
         self.export_btn = Button(self.window, text="Export", command=lambda inst=self: inst.export())
-        self.export_btn.grid(column=1, row=2, pady=5)
+        self.export_btn.grid(column=2, row=10, pady=5)
 
         self.cancel_btn = Button(self.window, text="Cancel", command=lambda inst=self: inst.cancel())
-        self.cancel_btn.grid(column=2, row=2, pady=5)
+        self.cancel_btn.grid(column=3, row=10, pady=5)
+
+        self.lbl_count = Label(self.window, text="")
+        self.lbl_count.grid(column=1, row=20, padx=20, pady=5, columnspan=3)
 
         self.lbl_info = Label(self.window, text="")
-        self.lbl_info.grid(column=3, row=2, padx=20, pady=5, columnspan=3)
+        self.lbl_info.grid(column=1, row=25, padx=20, pady=5, columnspan=3)
 
-        self.list_res = Listbox(self.window, width=int(tk_width * 0.9), height=int(tk_height * 0.85))
-        self.list_res.grid(column=1, row=3, padx=20, pady=3, columnspan=3)
+        self.list_res = Listbox(self.window, width=int(tk_width), height=int(tk_height * 0.75))
+        self.list_res.grid(column=1, row=30, padx=20, pady=3, columnspan=3)
 
-        self.pbar = Progressbar(self.window, orient=HORIZONTAL, length=int(cur_width * 0.8), mode='determinate')
-        self.pbar.grid(column=1, row=4, padx=20, pady=20, columnspan=3)
+        self.pbar = Progressbar(self.window, orient=HORIZONTAL, length=int(cur_width * 0.9), mode='determinate')
+        self.pbar.grid(column=1, row=40, padx=40, pady=20, columnspan=3)
 
         self.cancel_requested = False
         self.ignored_urls = ign_urls
