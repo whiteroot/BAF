@@ -121,6 +121,7 @@ class gui():
         self.list_res.delete(0, END)
         self.window.update()
         self.big_accounts = []
+        google_scraper = GoogleScraper(self, 10)
 
         for n in millions():
             if self.cancel_requested:
@@ -128,7 +129,7 @@ class gui():
                 break
             try:
                 self.lbl_info['text'] = "Searching accounts with {} followers".format(n)
-                self.searchMillion(n)
+                self.searchMillion(n, google_scraper)
             except Exception as e:
                 # most often, a captcha error
                 logging.fatal(e)
@@ -144,10 +145,9 @@ class gui():
         self.window.update()
 
 
-    def searchMillion(self, n):
+    def searchMillion(self, n, google_scraper):
         kw = "{} {} Followers -tag -explore".format(self.txt.get(), n)
         logging.info('searching: {}'.format(kw))
-        google_scraper = GoogleScraper(self, 10)
         serp = google_scraper.search(kw, self.url_to_search)
         cpt = 0
         for url in serp:

@@ -27,8 +27,8 @@ class GoogleScraper():
         else:
             sleeping_time = random.randint(self.pause, self.pause * 1.2)
             logging.info('sleeping {} seconds...'.format(sleeping_time))
-            for i in range(sleeping_time):
-                time.sleep(1)
+            for i in range(sleeping_time * 10):
+                time.sleep(0.1)
                 self.gui.update()
                 if self.gui.cancel_requested: break
 
