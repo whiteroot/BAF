@@ -35,7 +35,6 @@ class GoogleScraper():
                 self.gui.update()
                 time.sleep(1.0 / time_cutter)
                 if self.gui.cancel_requested:
-                    self.gui.lbl_info['text'] = ''
                     break
 
         if r.status_code >= 500:

@@ -102,12 +102,14 @@ class gui():
             self.cancel_btn['state'] = DISABLED
             self.search_btn['state'] = NORMAL
             self.txt['state'] = NORMAL
+            self.lbl_info['text'] = ''
             self.pbar.stop()
         else:
             logging.info('toggle OFF')
             self.cancel_btn['state'] = NORMAL
             self.search_btn['state'] = DISABLED
             self.txt['state'] = DISABLED
+            self.lbl_count['text'] = ''
         self.export_btn['state'] = self.search_btn['state']
         self.window.update()
 
@@ -146,9 +148,10 @@ class gui():
         kw = "{} {} Followers -tag -explore".format(self.txt.get(), n)
         logging.info('searching: {}'.format(kw))
         serp = google_scraper.search(kw, self.url_to_search)
-        cpt = 0
         for url in serp:
-            cpt += 1
+            if self.cancel_requested:
+                logging.info('cancel requested')
+                break
             if url.count('/') == 4:
                 logging.info('url: {}'.format(url))
                 m = regex.match(".*gram.com/(.*)/", url)
@@ -163,9 +166,6 @@ class gui():
                     len(self.big_accounts),
                     's' if len(self.big_accounts)>1 else '')
             self.window.update()
-            if self.cancel_requested:
-                logging.info('cancel requested')
-                break
             if len(self.big_accounts) > 99:
                 break
 
