@@ -147,7 +147,7 @@ class gui():
     def searchMillion(self, n):
         kw = "{} {} Followers -tag -explore".format(self.txt.get(), n)
         logging.info('searching: {}'.format(kw))
-        google_scraper = GoogleScraper(self)
+        google_scraper = GoogleScraper(self, 10)
         serp = google_scraper.search(kw, self.url_to_search)
         cpt = 0
         for url in serp:
