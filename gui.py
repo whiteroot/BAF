@@ -13,10 +13,10 @@ from utils import get_tld_cache_file
 
 
 def millions():
-    for i in range(1,3):
-        yield "{}m".format(i)
-        for j in range(1,10):
+    for i in range(2, 0, -1):
+        for j in range(9, 0, -1):
             yield "{}.{}m".format(i, j)
+        yield "{}m".format(i)
 
 
 class gui():
@@ -59,6 +59,9 @@ class gui():
 
         self.cancel_btn = Button(self.window, text="Cancel", command=lambda inst=self: inst.cancel())
         self.cancel_btn.grid(column=2, row=2, pady=5)
+
+        self.lbl_info = Label(self.window, text="")
+        self.lbl_info.grid(column=3, row=2, padx=20, pady=5, columnspan=3)
 
         self.list_res = Listbox(self.window, width=int(tk_width * 0.9), height=int(tk_height * 0.85))
         self.list_res.grid(column=1, row=3, padx=20, pady=3, columnspan=3)
@@ -124,6 +127,7 @@ class gui():
                 logging.debug('cancel requested')
                 break
             try:
+                self.lbl_info['text'] = "Searching accounts with {} followers".format(n)
                 self.searchMillion(n)
             except Exception as e:
                 # most often, a captcha error
