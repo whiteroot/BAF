@@ -8,28 +8,40 @@ import logging
 import settings
 
 _googleURL = 'https://google.com/'
+time_cutter = 10
 
 # ===================================================================================
 
 class GoogleScraper():
-    def __init__(self, gui):
+    def __init__(self, gui, pause):
         self.gui = gui
+        self.pause = pause
+        self.starting_search = True
 
     def search2(self, googleURL, nextLinksNeeded):
         r = requests.get(googleURL, headers=settings.headers)
         logging.info('[{}] {}'.format(r.status_code, googleURL))
+
         # be nice with google...
-        sleeping_time = random.randint(50, 90)
-        logging.debug('sleeping {} seconds...'.format(float(sleeping_time)/10))
-        for i in range(sleeping_time):
-            time.sleep(0.1)
-            self.gui.update()
-            if self.gui.cancel_requested: break
+        if self.starting_search:
+            self.starting_search = False
+        else:
+            sleeping_time = random.randint(self.pause, self.pause * 1.2)
+            logging.info('sleeping {} seconds...'.format(sleeping_time))
+            deci_sec = sleeping_time * time_cutter
+            for i in range(deci_sec):
+                self.gui.lbl_info['text'] = "Waiting... %4.1fs" % (float(deci_sec - i) / 10)
+                self.gui.update()
+                time.sleep(1.0 / time_cutter)
+                if self.gui.cancel_requested:
+                    break
+            self.gui.lbl_info['text'] = ""
+
         if r.status_code >= 500:
             raise Exception(r.status_code, r.text)
-        tree = html.fromstring(r.content)
 
         links = []
+        tree = html.fromstring(r.content)
         res = tree.xpath('//div[@class="g"]/h3/a/@href')
         for link in res:
             logging.debug('google link #1 : %s' % link)
@@ -50,21 +62,23 @@ class GoogleScraper():
         return links, next_links
 
     def search(self, _searched_string, on_site):
-        _2points = '%' + str(hex(ord(':')))[2:].upper()
-        _searched_string += ' site' + _2points + on_site
-        _searched_string = _searched_string.replace(' ','+')
-
+        _searched_string += ' site:{}'.format(on_site)
         url = _googleURL + 'search?q=' + _searched_string
         logging.info('search string : %s' % _searched_string)
         serp_links, next_links = self.search2(url, True)
         logging.info('SERP links : %s' % serp_links)
         logging.info('next links : %s' % next_links)
         for link in serp_links:
+            self.micro_sleep()
             yield link
 
         for next_link in next_links:
             logging.debug('next link item : %s' % next_link)
             serp_links2, next_links2 = self.search2(_googleURL + next_link, False)
             for link in serp_links2:
+                self.micro_sleep()
                 yield link
 
+    def micro_sleep(self):
+        r = float(random.randint(1, 10)) / 10
+        time.sleep(r)

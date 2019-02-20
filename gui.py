@@ -13,10 +13,15 @@ from utils import get_tld_cache_file
 
 
 def millions():
-    for i in range(1,3):
-        yield "{}m".format(i)
-        for j in range(1,10):
-            yield "{}.{}m".format(i, j)
+    for i in range(4, 0, -1):
+        q = ""
+        for j in range(9, 0, -1):
+            if q == "":
+                q = " ({}.{}m".format(i, j)
+            else:
+                q += " OR {}.{}m".format(i, j)
+        q += " OR {}m) ".format(i)
+        yield i, q
 
 
 class gui():
@@ -42,29 +47,29 @@ class gui():
         tk_height = cur_height / 20
 
         self.lbl_search = Label(self.window, text="Keywords")
-        self.lbl_search.grid(column=1, row=0, padx=20, pady=5)
+        self.lbl_search.grid(column=1, row=1, padx=20, pady=20)
 
-        self.txt = Entry(self.window, width=int(tk_width * 0.55))
-        self.txt.grid(column=1, row=1, padx=20, pady=10)
+        self.txt = Entry(self.window, width=int(tk_width * 0.5))
+        self.txt.grid(column=2, row=1, padx=20, pady=20)
         self.txt.focus()
 
         self.search_btn = Button(self.window, text="Search", command=lambda inst=self: inst.search())
-        self.search_btn.grid(column=2, row=1, pady=5)
+        self.search_btn.grid(column=1, row=10, pady=5)
+
+        self.export_btn = Button(self.window, text="Export", command=lambda inst=self: inst.export(), state=DISABLED)
+        self.export_btn.grid(column=2, row=10, pady=5)
+
+        self.cancel_btn = Button(self.window, text="Cancel", command=lambda inst=self: inst.cancel(), state=DISABLED)
+        self.cancel_btn.grid(column=3, row=10, pady=5)
 
         self.lbl_count = Label(self.window, text="")
-        self.lbl_count.grid(column=3, row=1, padx=20, pady=5)
+        self.lbl_count.grid(column=1, row=20, padx=20, pady=5, columnspan=3)
 
-        self.export_btn = Button(self.window, text="Export", command=lambda inst=self: inst.export())
-        self.export_btn.grid(column=1, row=2, pady=5)
+        self.lbl_info = Label(self.window, text="")
+        self.lbl_info.grid(column=1, row=25, padx=20, pady=5, columnspan=3)
 
-        self.cancel_btn = Button(self.window, text="Cancel", command=lambda inst=self: inst.cancel())
-        self.cancel_btn.grid(column=2, row=2, pady=5)
-
-        self.list_res = Listbox(self.window, width=int(tk_width * 0.9), height=int(tk_height * 0.85))
-        self.list_res.grid(column=1, row=3, padx=20, pady=3, columnspan=3)
-
-        self.pbar = Progressbar(self.window, orient=HORIZONTAL, length=int(cur_width * 0.8), mode='determinate')
-        self.pbar.grid(column=1, row=4, padx=20, pady=20, columnspan=3)
+        self.list_res = Listbox(self.window, width=int(tk_width), height=int(tk_height * 0.75))
+        self.list_res.grid(column=1, row=30, padx=80, pady=3, columnspan=3)
 
         self.cancel_requested = False
         self.ignored_urls = ign_urls
@@ -87,7 +92,7 @@ class gui():
                 for x,y in self.big_accounts:
                     f.write(x)
                     f.write(settings.csv_sep)
-                    f.write(y)
+                    f.write("{}M".format(y))
                     f.write('\n')
                     nb_lines += 1
                 messagebox.showinfo("Info", "%d big accounts exported in %s" % (nb_lines, export_file))
@@ -95,14 +100,17 @@ class gui():
 
     def toggle(self):
         if self.search_btn['state'] == DISABLED:
+            logging.info('toggle ON')
             self.cancel_btn['state'] = DISABLED
             self.search_btn['state'] = NORMAL
             self.txt['state'] = NORMAL
-            self.pbar.stop()
+            self.lbl_info['text'] = ''
         else:
+            logging.info('toggle OFF')
             self.cancel_btn['state'] = NORMAL
             self.search_btn['state'] = DISABLED
             self.txt['state'] = DISABLED
+            self.lbl_count['text'] = ''
         self.export_btn['state'] = self.search_btn['state']
         self.window.update()
 
@@ -114,40 +122,37 @@ class gui():
 
     def search(self):
         if self.txt.get() == '': return
+        self.cancel_requested = False
         self.toggle()
         self.list_res.delete(0, END)
         self.window.update()
         self.big_accounts = []
+        google_scraper = GoogleScraper(self, 10)
 
-        for n in millions():
+        for nb,q in millions():
             if self.cancel_requested:
-                logging.debug('cancel requested')
+                logging.info('cancel requested')
                 break
             try:
-                self.searchMillion(n)
+                self.searchMillion(nb, q, google_scraper)
             except Exception as e:
                 # most often, a captcha error
                 logging.fatal(e)
                 break
-            self.window.update()
 
         logging.info('BIG ACCOUNTS FOUND: {}'.format(len(self.big_accounts)))
 
-        if self.cancel_requested:
-            self.cancel_requested = False
-        else:
-            self.toggle()
-        self.window.update()
 
-
-    def searchMillion(self, n):
-        kw = "{} {} Followers -tag -explore".format(self.txt.get(), n)
+    def searchMillion(self, nb, q, google_scraper):
+        kw = "{} {} Followers -tag -explore".format(self.txt.get(), q)
         logging.info('searching: {}'.format(kw))
-        google_scraper = GoogleScraper(self)
         serp = google_scraper.search(kw, self.url_to_search)
-        cpt = 0
         for url in serp:
-            cpt += 1
+            if self.cancel_requested:
+                logging.info('cancel requested')
+                break
+            self.lbl_info['text'] = "Searching accounts with {}M followers".format(nb)
+            self.window.update()
             if url.count('/') == 4:
                 logging.info('url: {}'.format(url))
                 m = regex.match(".*gram.com/(.*)/", url)
@@ -155,18 +160,13 @@ class gui():
                     account = m.groups()[0]
                     self.list_res.insert(0, account)
                     self.list_res.itemconfig(0, foreground="white", bg="blue")
+                    self.window.update()
                     logging.info('account: {}'.format(account))
-                    self.big_accounts.append( (account, n) )
-            self.pbar.step(100 / settings.nb_serp_results)
+                    self.big_accounts.append( (account, nb) )
             self.lbl_count['text'] = "{} account{} found".format(
                     len(self.big_accounts),
                     's' if len(self.big_accounts)>1 else '')
             self.window.update()
-            if self.cancel_requested:
-                logging.debug('cancel requested')
-                break
-            if len(self.big_accounts) > 99:
-                break
 
 
     def mainloop(self):
