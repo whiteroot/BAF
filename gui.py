@@ -56,10 +56,10 @@ class gui():
         self.search_btn = Button(self.window, text="Search", command=lambda inst=self: inst.search())
         self.search_btn.grid(column=1, row=10, pady=5)
 
-        self.export_btn = Button(self.window, text="Export", command=lambda inst=self: inst.export())
+        self.export_btn = Button(self.window, text="Export", command=lambda inst=self: inst.export(), state=DISABLED)
         self.export_btn.grid(column=2, row=10, pady=5)
 
-        self.cancel_btn = Button(self.window, text="Cancel", command=lambda inst=self: inst.cancel())
+        self.cancel_btn = Button(self.window, text="Cancel", command=lambda inst=self: inst.cancel(), state=DISABLED)
         self.cancel_btn.grid(column=3, row=10, pady=5)
 
         self.lbl_count = Label(self.window, text="")
@@ -69,10 +69,7 @@ class gui():
         self.lbl_info.grid(column=1, row=25, padx=20, pady=5, columnspan=3)
 
         self.list_res = Listbox(self.window, width=int(tk_width), height=int(tk_height * 0.75))
-        self.list_res.grid(column=1, row=30, padx=20, pady=3, columnspan=3)
-
-        self.pbar = Progressbar(self.window, orient=HORIZONTAL, length=int(cur_width * 0.9), mode='determinate')
-        self.pbar.grid(column=1, row=40, padx=40, pady=20, columnspan=3)
+        self.list_res.grid(column=1, row=30, padx=80, pady=3, columnspan=3)
 
         self.cancel_requested = False
         self.ignored_urls = ign_urls
@@ -108,7 +105,6 @@ class gui():
             self.search_btn['state'] = NORMAL
             self.txt['state'] = NORMAL
             self.lbl_info['text'] = ''
-            self.pbar.stop()
         else:
             logging.info('toggle OFF')
             self.cancel_btn['state'] = NORMAL
@@ -167,7 +163,6 @@ class gui():
                     self.window.update()
                     logging.info('account: {}'.format(account))
                     self.big_accounts.append( (account, nb) )
-            self.pbar.step(100 / settings.nb_serp_results)
             self.lbl_count['text'] = "{} account{} found".format(
                     len(self.big_accounts),
                     's' if len(self.big_accounts)>1 else '')
