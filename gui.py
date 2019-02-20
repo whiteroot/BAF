@@ -13,10 +13,15 @@ from utils import get_tld_cache_file
 
 
 def millions():
-    for i in range(2, 0, -1):
+    for i in range(4, 0, -1):
+        q = ""
         for j in range(9, 0, -1):
-            yield "{}.{}m".format(i, j)
-        yield "{}m".format(i)
+            if q == "":
+                q = " ({}.{}m".format(i, j)
+            else:
+                q += " OR {}.{}m".format(i, j)
+        q += " OR {}m) ".format(i)
+        yield i, q
 
 
 class gui():
@@ -90,7 +95,7 @@ class gui():
                 for x,y in self.big_accounts:
                     f.write(x)
                     f.write(settings.csv_sep)
-                    f.write(y)
+                    f.write("{}M".format(y))
                     f.write('\n')
                     nb_lines += 1
                 messagebox.showinfo("Info", "%d big accounts exported in %s" % (nb_lines, export_file))
@@ -128,30 +133,30 @@ class gui():
         self.big_accounts = []
         google_scraper = GoogleScraper(self, 10)
 
-        for n in millions():
+        for nb,q in millions():
             if self.cancel_requested:
                 logging.info('cancel requested')
                 break
             try:
-                self.lbl_info['text'] = "Searching accounts with {} followers".format(n)
-                self.searchMillion(n, google_scraper)
+                self.searchMillion(nb, q, google_scraper)
             except Exception as e:
                 # most often, a captcha error
                 logging.fatal(e)
                 break
-            self.window.update()
 
         logging.info('BIG ACCOUNTS FOUND: {}'.format(len(self.big_accounts)))
 
 
-    def searchMillion(self, n, google_scraper):
-        kw = "{} {} Followers -tag -explore".format(self.txt.get(), n)
+    def searchMillion(self, nb, q, google_scraper):
+        kw = "{} {} Followers -tag -explore".format(self.txt.get(), q)
         logging.info('searching: {}'.format(kw))
         serp = google_scraper.search(kw, self.url_to_search)
         for url in serp:
             if self.cancel_requested:
                 logging.info('cancel requested')
                 break
+            self.lbl_info['text'] = "Searching accounts with {}M followers".format(nb)
+            self.window.update()
             if url.count('/') == 4:
                 logging.info('url: {}'.format(url))
                 m = regex.match(".*gram.com/(.*)/", url)
@@ -159,15 +164,14 @@ class gui():
                     account = m.groups()[0]
                     self.list_res.insert(0, account)
                     self.list_res.itemconfig(0, foreground="white", bg="blue")
+                    self.window.update()
                     logging.info('account: {}'.format(account))
-                    self.big_accounts.append( (account, n) )
+                    self.big_accounts.append( (account, nb) )
             self.pbar.step(100 / settings.nb_serp_results)
             self.lbl_count['text'] = "{} account{} found".format(
                     len(self.big_accounts),
                     's' if len(self.big_accounts)>1 else '')
             self.window.update()
-            if len(self.big_accounts) > 99:
-                break
 
 
     def mainloop(self):

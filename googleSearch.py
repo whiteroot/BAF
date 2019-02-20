@@ -28,7 +28,6 @@ class GoogleScraper():
         else:
             sleeping_time = random.randint(self.pause, self.pause * 1.2)
             logging.info('sleeping {} seconds...'.format(sleeping_time))
-            lbl_copy = self.gui.lbl_info['text']
             deci_sec = sleeping_time * time_cutter
             for i in range(deci_sec):
                 self.gui.lbl_info['text'] = "Waiting... %4.1fs" % (float(deci_sec - i) / 10)
@@ -36,6 +35,7 @@ class GoogleScraper():
                 time.sleep(1.0 / time_cutter)
                 if self.gui.cancel_requested:
                     break
+            self.gui.lbl_info['text'] = ""
 
         if r.status_code >= 500:
             raise Exception(r.status_code, r.text)
