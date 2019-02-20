@@ -158,11 +158,11 @@ class gui():
                 m = regex.match(".*gram.com/(.*)/", url)
                 if m:
                     account = m.groups()[0]
-                    self.list_res.insert(0, account)
-                    self.list_res.itemconfig(0, foreground="white", bg="blue")
-                    self.window.update()
-                    logging.info('account: {}'.format(account))
-                    self.big_accounts.append( (account, nb) )
+                    if (account, nb) not in self.big_accounts:
+                        self.list_res.insert(0, account)
+                        self.list_res.itemconfig(0, foreground="white", bg="blue")
+                        logging.info('account: {}'.format(account))
+                        self.big_accounts.append( (account, nb) )
             self.lbl_count['text'] = "{} account{} found".format(
                     len(self.big_accounts),
                     's' if len(self.big_accounts)>1 else '')

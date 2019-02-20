@@ -36,6 +36,7 @@ class GoogleScraper():
                 if self.gui.cancel_requested:
                     break
             self.gui.lbl_info['text'] = ""
+            self.gui.update()
 
         if r.status_code >= 500:
             raise Exception(r.status_code, r.text)
