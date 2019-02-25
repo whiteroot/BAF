@@ -65,6 +65,7 @@ class gui():
                         variable=self.nbFollowers, value=i, command=lambda inst=self: inst.selectNbFollowers()))
             self.rbNbFollowers[i].grid(column=y, row=15+x, padx=2, pady=5)
             i += 1
+        self.nbFollowers.set(3)
 
         self.lbl_count = Label(self.window, text="")
         self.lbl_count.grid(column=1, row=20, padx=20, pady=5, columnspan=3)
@@ -78,6 +79,7 @@ class gui():
         self.cancel_requested = False
         self.ignored_urls = ign_urls
         self.big_accounts = []
+        self.update()
 
 
     def millions(self):
@@ -90,10 +92,10 @@ class gui():
                 q = ""
                 for j in range(1, 9):
                     if q == "":
-                        q = " ({}.{}{}".format(i, j, prefix)
+                        q = "({}.{}{}".format(i, j, prefix)
                     else:
                         q += " OR {}.{}{}".format(i, j, prefix)
-                q += " OR {}{}) ".format(i, prefix)
+                q += " OR {}{})".format(i, prefix)
                 yield i, q
             else:
                 yield i, "{}{}".format(i, prefix)
@@ -110,6 +112,8 @@ class gui():
             temp_dir = tempfile.gettempdir()
             export_file = "{}{}baf.{}.csv".format(temp_dir, os.sep, self.txt.get().replace(' ', '-'))
             logging.debug('export file : %s', export_file)
+            s = nbFollowerSearch[self.nbFollowers.get()]
+            prefix = s[4]
             with open(export_file, 'w') as f:
                 f.write('account')
                 f.write(settings.csv_sep)
@@ -119,7 +123,7 @@ class gui():
                 for x,y in self.big_accounts:
                     f.write(x)
                     f.write(settings.csv_sep)
-                    f.write("{}M".format(y))
+                    f.write("{}{}".format(y, prefix))
                     f.write('\n')
                     nb_lines += 1
                 messagebox.showinfo("Info", "%d big accounts exported in %s" % (nb_lines, export_file))
@@ -202,6 +206,5 @@ class gui():
     def update(self, update_info=True):
         if update_info:
             s = nbFollowerSearch[self.nbFollowers.get()]
-            self.lbl_info['text'] = "Searching: {} to {} {}".format(s[2], s[3], s[4])
+            self.lbl_info['text'] = "Searching accounts with {} to {} {} followers".format(s[2], s[3], s[4])
         self.window.update()
-
