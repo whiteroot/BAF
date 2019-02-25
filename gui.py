@@ -1,6 +1,7 @@
 import os
 import logging
 import tempfile
+from random import shuffle, seed
 
 import regex
 from tkinter import *
@@ -82,7 +83,7 @@ class gui():
         self.update()
 
 
-    def millions(self):
+    def millionsGen(self):
         s = nbFollowerSearch[self.nbFollowers.get()]
         min_value = s[2]
         max_value = s[3]
@@ -99,6 +100,16 @@ class gui():
                 yield i, q
             else:
                 yield i, "{}{}".format(i, prefix)
+
+
+    def millions(self):
+        millionList = []
+        for x in self.millionsGen():
+            millionList.append(x)
+        seed()
+        shuffle(millionList)
+        for x in millionList:
+            yield x
 
 
     def selectNbFollowers(self):
