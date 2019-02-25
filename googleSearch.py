@@ -31,7 +31,7 @@ class GoogleScraper():
             deci_sec = sleeping_time * time_cutter
             for i in range(deci_sec):
                 self.gui.lbl_info['text'] = "Waiting... %4.1fs" % (float(deci_sec - i) / 10)
-                self.gui.update()
+                self.gui.update(update_info=False)
                 time.sleep(1.0 / time_cutter)
                 if self.gui.cancel_requested:
                     break
@@ -81,5 +81,5 @@ class GoogleScraper():
                 yield link
 
     def micro_sleep(self):
-        r = float(random.randint(1, 10)) / 10
+        r = float(random.randint(2, 4)) / 10
         time.sleep(r)

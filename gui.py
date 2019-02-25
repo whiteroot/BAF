@@ -11,17 +11,12 @@ from googleSearch import GoogleScraper
 import settings
 from utils import get_tld_cache_file
 
+KILO = 'k'
+MEGA = 'M'
 
-def millions():
-    for i in range(4, 0, -1):
-        q = ""
-        for j in range(9, 0, -1):
-            if q == "":
-                q = " ({}.{}m".format(i, j)
-            else:
-                q += " OR {}.{}m".format(i, j)
-        q += " OR {}m) ".format(i)
-        yield i, q
+# format of each element of the list: (row, column, min, max, prefix)
+nbFollowerSearch = [ (1, 2, 10, 99, KILO), (1, 3, 100, 999, KILO),
+        (2, 1, 1, 9, MEGA), (2, 2, 10, 99, MEGA), (2, 3, 100, 999, MEGA) ]
 
 
 class gui():
@@ -62,6 +57,15 @@ class gui():
         self.cancel_btn = Button(self.window, text="Cancel", command=lambda inst=self: inst.cancel(), state=DISABLED)
         self.cancel_btn.grid(column=3, row=10, pady=5)
 
+        self.nbFollowers = IntVar()
+        self.rbNbFollowers = []
+        i = 0
+        for x, y, min_value, max_value, prefix in nbFollowerSearch:
+            self.rbNbFollowers.append(Radiobutton(self.window, text="{} to {} {}".format(min_value, max_value, prefix),
+                        variable=self.nbFollowers, value=i, command=lambda inst=self: inst.selectNbFollowers()))
+            self.rbNbFollowers[i].grid(column=y, row=15+x, padx=2, pady=5)
+            i += 1
+
         self.lbl_count = Label(self.window, text="")
         self.lbl_count.grid(column=1, row=20, padx=20, pady=5, columnspan=3)
 
@@ -74,6 +78,29 @@ class gui():
         self.cancel_requested = False
         self.ignored_urls = ign_urls
         self.big_accounts = []
+
+
+    def millions(self):
+        s = nbFollowerSearch[self.nbFollowers.get()]
+        min_value = s[2]
+        max_value = s[3]
+        prefix = s[4]
+        for i in range(min_value, max_value+1):
+            if prefix == MEGA:
+                q = ""
+                for j in range(1, 9):
+                    if q == "":
+                        q = " ({}.{}{}".format(i, j, prefix)
+                    else:
+                        q += " OR {}.{}{}".format(i, j, prefix)
+                q += " OR {}{}) ".format(i, prefix)
+                yield i, q
+            else:
+                yield i, "{}{}".format(i, prefix)
+
+
+    def selectNbFollowers(self):
+        self.update()
 
 
     def export(self):
@@ -125,11 +152,11 @@ class gui():
         self.cancel_requested = False
         self.toggle()
         self.list_res.delete(0, END)
-        self.window.update()
+        self.update()
         self.big_accounts = []
         google_scraper = GoogleScraper(self, 10)
 
-        for nb,q in millions():
+        for nb,q in self.millions():
             if self.cancel_requested:
                 logging.info('cancel requested')
                 break
@@ -151,8 +178,7 @@ class gui():
             if self.cancel_requested:
                 logging.info('cancel requested')
                 break
-            self.lbl_info['text'] = "Searching accounts with {}M followers".format(nb)
-            self.window.update()
+            self.update()
             if url.count('/') == 4:
                 logging.info('url: {}'.format(url))
                 m = regex.match(".*gram.com/(.*)/", url)
@@ -166,13 +192,16 @@ class gui():
             self.lbl_count['text'] = "{} account{} found".format(
                     len(self.big_accounts),
                     's' if len(self.big_accounts)>1 else '')
-            self.window.update()
+            self.update()
 
 
     def mainloop(self):
         self.window.mainloop()
 
 
-    def update(self):
+    def update(self, update_info=True):
+        if update_info:
+            s = nbFollowerSearch[self.nbFollowers.get()]
+            self.lbl_info['text'] = "Searching: {} to {} {}".format(s[2], s[3], s[4])
         self.window.update()
 
