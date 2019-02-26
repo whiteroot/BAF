@@ -7,7 +7,7 @@ from lxml import html
 import logging
 import settings
 
-_googleURL = 'https://google.com/'
+_googleURL = 'https://www.google.com/'
 time_cutter = 10
 
 # ===================================================================================
@@ -21,6 +21,7 @@ class GoogleScraper():
     def search2(self, googleURL, nextLinksNeeded):
         r = requests.get(googleURL, headers=settings.headers)
         logging.info('[{}] {}'.format(r.status_code, googleURL))
+        logging.debug(r.text)
 
         # be nice with google...
         if self.starting_search:

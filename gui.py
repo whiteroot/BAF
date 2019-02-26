@@ -105,12 +105,13 @@ class gui():
             while i <= max_value:
                 if q == "":
                     q = "({}{}".format(i, prefix)
+                    original_i = i
                 else:
                     q += " OR {}{}".format(i, prefix)
                 nb_operands += 1
                 if nb_operands > 9:
                     q += ")"
-                    yield i, q
+                    yield original_i, q
                     q = ""
                     nb_operands = 0
                 i += 1
@@ -203,7 +204,7 @@ class gui():
     def searchMillion(self, nb, q, google_scraper):
         kw = "{} {} Followers -tag -explore".format(self.txt.get(), q)
         logging.info('searching: {}'.format(kw))
-        self.update_info()
+        self.update_info(nb)
         self.update()
 
         serp = google_scraper.search(kw, self.url_to_search)
@@ -232,9 +233,12 @@ class gui():
         self.window.mainloop()
 
 
-    def update_info(self):
-        s = nbFollowerSearch[self.nbFollowers.get()]
-        self.lbl_info['text'] = "Searching accounts with {}{} followers".format(s[2], s[4])
+    def update_info(self, n=None):
+        if n:
+            s = nbFollowerSearch[self.nbFollowers.get()]
+            self.lbl_info['text'] = "Searching accounts with {}{} followers".format(n, s[4])
+        else:
+            self.lbl_info['text'] = ""
         self.update()
 
 
