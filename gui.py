@@ -203,6 +203,9 @@ class gui():
     def searchMillion(self, nb, q, google_scraper):
         kw = "{} {} Followers -tag -explore".format(self.txt.get(), q)
         logging.info('searching: {}'.format(kw))
+        self.update_info()
+        self.update()
+
         serp = google_scraper.search(kw, self.url_to_search)
         for url in serp:
             if self.cancel_requested:
@@ -229,8 +232,11 @@ class gui():
         self.window.mainloop()
 
 
-    def update(self, update_info=True):
-        if update_info:
-            s = nbFollowerSearch[self.nbFollowers.get()]
-            self.lbl_info['text'] = "Searching accounts with {} to {} {} followers".format(s[2], s[3], s[4])
+    def update_info(self):
+        s = nbFollowerSearch[self.nbFollowers.get()]
+        self.lbl_info['text'] = "Searching accounts with {}{} followers".format(s[2], s[4])
+        self.update()
+
+
+    def update(self):
         self.window.update()
