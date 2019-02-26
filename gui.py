@@ -87,8 +87,8 @@ class gui():
         min_value = s[2]
         max_value = s[3]
         prefix = s[4]
-        for i in range(min_value, max_value+1):
-            if prefix == MEGA:
+        if prefix == MEGA:
+            for i in range(min_value, max_value+1):
                 q = ""
                 for j in range(1, 9):
                     if q == "":
@@ -97,8 +97,23 @@ class gui():
                         q += " OR {}.{}{}".format(i, j, prefix)
                 q += " OR {}{})".format(i, prefix)
                 yield i, q
-            else:
-                yield i, "{}{}".format(i, prefix)
+        else:
+            q = ""
+            nb_operands = 0
+            i = min_value
+            while i <= max_value:
+                if q == "":
+                    q = "({}{}".format(i, prefix)
+                else:
+                    q += " OR {}{}".format(i, prefix)
+                nb_operands += 1
+                if nb_operands > 9:
+                    q += ")"
+                    yield i, q
+                    q = ""
+                    nb_operands = 0
+                i += 1
+
 
 
     def selectNbFollowers(self):
