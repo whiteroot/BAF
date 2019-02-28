@@ -1,10 +1,10 @@
 import time
 import random
-import sys
 import requests
-from unidecode import unidecode
 from lxml import html
 import logging
+import regex
+
 import settings
 
 _googleURL = 'https://www.google.com/'
@@ -43,18 +43,31 @@ class GoogleScraper():
 
         links = []
         tree = html.fromstring(r.content)
-        res = tree.xpath('//div[@class="g"]/h3/a/@href')
-        for link in res:
-            logging.debug('google link #1 : %s' % link)
-            pos = link.find('&sa=')
-            if pos > 0:
-                link = link[7:pos]
-                if link[:4] == 'http':
-                    logging.debug('google link #2 : %s' % link)
-                    links.append(link)
-            else:
-                logging.error("can't parse google URL")
-                return False
+        res = tree.xpath('//div[@class="g"]/div[@class="s"]')
+        for e in res:
+            html_text_account_info = ''
+            html_text_account_link = ''
+            for child in e.getchildren():
+                logging.debug("tag: {}    items:{}".format(child.tag, child.items()))
+                if child.tag == 'span':
+                    html_text_account_info = child.text_content()
+                elif child.tag == 'div':
+                    child2 = child.getchildren()[0]
+                    logging.debug(child2.tag)
+                    html_text_account_link = child2.text
+            logging.info("account info: {}".format(html_text_account_info))
+            logging.info("account link: {}".format(html_text_account_link))
+            if html_text_account_link.count('/') != 4:
+                logging.info("Not an account link: ignoring")
+            elif html_text_account_info and html_text_account_link:
+                html_text_account_info = html_text_account_info.replace('\n', '')
+                m = regex.match(".*?([\.0-9]*)m Followers.*", html_text_account_info)
+                if m:
+                    html_text_nb_followers = m.groups()[0]
+                    print("Found: {}".format(html_text_nb_followers))
+                    links.append(html_text_account_link)
+                else:
+                    logging.error("can't find user info in SERP")
 
         if nextLinksNeeded:
             next_links = tree.xpath('//div[@id="foot"]/table[@id="nav"]/tr/td/a[@class="fl"]/@href')

@@ -88,21 +88,26 @@ class gui():
         min_value = s[2]
         max_value = s[3]
         prefix = s[4]
+        self.query_list = []
         if prefix == MEGA:
             for i in range(min_value, max_value+1):
                 q = ""
                 for j in range(1, 9):
+                    self.query_list.append( (i, j, prefix) )
+                    # TODO: do the concat elsewhere, from the list
                     if q == "":
                         q = "({}.{}{}".format(i, j, prefix)
                     else:
                         q += " OR {}.{}{}".format(i, j, prefix)
                 q += " OR {}{})".format(i, prefix)
+                logging.info(self.query_list)
                 yield i, q
         else:
             q = ""
             nb_operands = 0
             i = min_value
             while i <= max_value:
+                self.query_list.append( (i, j, prefix) )
                 if q == "":
                     q = "({}{}".format(i, prefix)
                     original_i = i
@@ -111,6 +116,7 @@ class gui():
                 nb_operands += 1
                 if nb_operands > 9:
                     q += ")"
+                    logging.info(self.query_list)
                     yield original_i, q
                     q = ""
                     nb_operands = 0
