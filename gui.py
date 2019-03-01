@@ -210,6 +210,8 @@ class gui():
                         self.list_res.itemconfig(0, foreground="white", bg="blue")
                         logging.info('account: {}'.format(account))
                         self.big_accounts.append( (account, nb) )
+                    else:
+                        logging.info(f"{account} / {nb}{prefix} already selected")
             self.lbl_count['text'] = "{} account{} found".format(
                     len(self.big_accounts),
                     's' if len(self.big_accounts)>1 else '')

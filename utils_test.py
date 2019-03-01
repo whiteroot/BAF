@@ -1,6 +1,6 @@
 import unittest
 
-from utils import getMillionList, KILO, MEGA
+from utils import getMillionList, KILO, MEGA, isAccount
 
 
 class TestUtils(unittest.TestCase):
@@ -29,3 +29,13 @@ class TestUtils(unittest.TestCase):
             assert(x[-1] == (j, 9, prefix))
             assert( (i, 2, prefix) in x)
             assert( (j-1, 5, prefix) in x)
+
+    def testIsAccount(self):
+        self.assertTrue(isAccount('https://www.instagram.com/bob/'))
+        self.assertTrue(isAccount('https://www.instagram.com/bob/?hl=fr'))
+        self.assertTrue(isAccount('https://www.instagram.com/bob'))
+        self.assertFalse(isAccount('https://www.instagram.com/bob/p/'))
+        self.assertFalse(isAccount('https://www.instagram.com/'))
+        self.assertFalse(isAccount('https://www.instagram.com'))
+
+

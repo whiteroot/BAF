@@ -5,6 +5,7 @@ from lxml import html
 import logging
 import regex
 
+from utils import isAccount
 import settings
 
 _googleURL = 'https://www.google.com/'
@@ -56,20 +57,21 @@ class GoogleScraper():
                     child2 = child.getchildren()[0]
                     logging.debug(child2.tag)
                     html_text_account_link = child2.text
-            logging.info("account info: {}".format(html_text_account_info))
             logging.info("account link: {}".format(html_text_account_link))
-            if html_text_account_link.count('/') != 4:
-                logging.info("Not an account link: ignoring")
+            logging.info("account info: {}".format(html_text_account_info))
+            if not isAccount(html_text_account_link):
+                logging.info("Not an account link: ignored")
             elif html_text_account_info and html_text_account_link:
                 html_text_account_info = html_text_account_info.replace('\n', '')
-                m = regex.match(".*?([\.0-9]*)[mk] Followers.*", html_text_account_info)
+                m = regex.match(".*?([\.0-9]*)[mk] [fF]ollowers.*", html_text_account_info)
                 if m:
                     html_text_nb_followers = m.groups()[0]
-                    logging.debug("[Regex] Nb followers: {}".format(html_text_nb_followers))
+                    logging.info("[Regex] Nb followers: {}".format(html_text_nb_followers))
                     elt = (html_text_account_link, html_text_account_info, html_text_nb_followers)
                     links.append(elt)
+                    logging.info("User selected")
                 else:
-                    logging.error("can't find user info in SERP")
+                    logging.info("User ignored")
 
         if nextLinksNeeded:
             next_links = tree.xpath('//div[@id="foot"]/table[@id="nav"]/tr/td/a[@class="fl"]/@href')
