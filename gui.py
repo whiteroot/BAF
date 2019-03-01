@@ -77,7 +77,8 @@ class gui():
         self.lbl_info = Label(self.window, text="")
         self.lbl_info.grid(column=1, row=25, padx=20, pady=5, columnspan=3)
 
-        self.list_res = Listbox(self.window, width=int(tk_width), height=int(tk_height * 0.75))
+        self.list_res = Listbox(self.window, width=int(tk_width),
+                height=int(tk_height * 0.75), font=("Courier", 10, "bold"))
         self.list_res.grid(column=1, row=30, padx=80, pady=3, columnspan=3)
 
         self.cancel_requested = False
@@ -189,6 +190,8 @@ class gui():
         logging.info('searching: {}'.format(kw))
         self.lbl_info['text'] = "Searching accounts..."
         self.update()
+        s = nbFollowerSearch[self.nbFollowers.get()]
+        prefix = s[4]
 
         serp = google_scraper.search(kw, self.url_to_search)
         for url, info, nb in serp:
@@ -202,7 +205,8 @@ class gui():
                 if m:
                     account = m.groups()[0]
                     if (account, nb) not in self.big_accounts:
-                        self.list_res.insert(0, account)
+                        list_elt = f"{account:30s} {nb:6s}{prefix}"
+                        self.list_res.insert(0, list_elt)
                         self.list_res.itemconfig(0, foreground="white", bg="blue")
                         logging.info('account: {}'.format(account))
                         self.big_accounts.append( (account, nb) )
