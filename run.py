@@ -35,6 +35,10 @@ if __name__ == '__main__':
                 print ("unknown resolution : %s" % (sys.argv[i+1]))
                 sys.exit(1)
             i += 2
+        elif sys.argv[i] in ('-h', '--help'):
+            print("usage:")
+            print(f"{sys.argv[0]} [--console|--tty] [--level debug] [--resolution small|medium|large]")
+            sys.exit()
         else:
             print ("unknown argument : %s" % (sys.argv[i]))
             sys.exit(1)
