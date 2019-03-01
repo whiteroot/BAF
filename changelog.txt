@@ -1,0 +1,5 @@
+v1.1
+add search of accounts with thousands followers
+
+v1.0
+initial release

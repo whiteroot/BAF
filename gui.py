@@ -5,12 +5,12 @@ from random import shuffle, seed
 
 import regex
 from tkinter import *
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 from tkinter.ttk import Progressbar
 
 from googleSearch import GoogleScraper
 import settings
-from utils import getMillionList, KILO, MEGA
+from utils import getMillionList, KILO, MEGA, getHomeDir
 
 # format of each element of the list: (row, column, min, max, prefix)
 nbFollowerSearch = [
@@ -121,8 +121,11 @@ class gui():
         if len(self.big_accounts) == 0:
             messagebox.showinfo("Info", "No account to export!")
         else:
-            temp_dir = tempfile.gettempdir()
-            export_file = "{}{}baf.{}.csv".format(temp_dir, os.sep, self.txt.get().replace(' ', '-'))
+            def_name = "{}.csv".format(self.txt.get().replace(' ', '-').replace('(', '').replace(')', '').lower())
+            #export_file = filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("csv files","*.csv"),("all files","*.*")))
+            export_file = filedialog.asksaveasfilename(initialdir = getHomeDir(), title = "Save file", initialfile=def_name, defaultextension=".csv")
+            if not export_file:
+                return
             logging.debug('export file : %s', export_file)
             s = nbFollowerSearch[self.nbFollowers.get()]
             prefix = s[4]

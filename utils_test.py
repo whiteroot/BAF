@@ -1,12 +1,19 @@
 import unittest
+import os
 
-from utils import getMillionList, KILO, MEGA, isAccount
+from utils import getMillionList, KILO, MEGA, isAccount, getHomeDir
 
 
 class TestUtils(unittest.TestCase):
 
     def setUp(self):
         pass
+
+    def testGetHomeDir(self):
+        hd = getHomeDir()
+        print(f"Home dir: {hd}")
+        print(os.sep)
+        self.assertTrue(os.sep in hd)
 
     def testMillionsGen(self):
         self.doTest(10, 99, KILO)
