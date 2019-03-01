@@ -61,7 +61,7 @@ class GoogleScraper():
                 logging.info("Not an account link: ignoring")
             elif html_text_account_info and html_text_account_link:
                 html_text_account_info = html_text_account_info.replace('\n', '')
-                m = regex.match(".*?([\.0-9]*)m Followers.*", html_text_account_info)
+                m = regex.match(".*?([\.0-9]*)[mk] Followers.*", html_text_account_info)
                 if m:
                     html_text_nb_followers = m.groups()[0]
                     print("Found: {}".format(html_text_nb_followers))

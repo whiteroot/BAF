@@ -10,19 +10,22 @@ from tkinter.ttk import Progressbar
 
 from googleSearch import GoogleScraper
 import settings
-from utils import get_tld_cache_file
-
-KILO = 'k'
-MEGA = 'M'
+from utils import getMillionList, KILO, MEGA
 
 # format of each element of the list: (row, column, min, max, prefix)
-nbFollowerSearch = [ (1, 2, 10, 99, KILO), (1, 3, 100, 999, KILO),
-        (2, 1, 1, 9, MEGA), (2, 2, 10, 99, MEGA), (2, 3, 100, 999, MEGA) ]
+nbFollowerSearch = [
+        (1, 2, 10, 99, KILO),
+        (1, 3, 100, 999, KILO),
+        (2, 1, 1, 9, MEGA),
+        (2, 2, 10, 99, MEGA),
+        (2, 3, 100, 999, MEGA)
+        ]
+SUB_LIST_LENGTH = 10
 
 
 class gui():
 
-    def __init__(self, resolution, current_resolution, ign_urls):
+    def __init__(self, resolution, current_resolution):
         self.url_to_search = 'instagram.com'
         self.window = Tk()
         title_window = settings.software['name']
@@ -78,60 +81,36 @@ class gui():
         self.list_res.grid(column=1, row=30, padx=80, pady=3, columnspan=3)
 
         self.cancel_requested = False
-        self.ignored_urls = ign_urls
         self.big_accounts = []
         self.update()
 
 
-    def millionsGen(self):
-        s = nbFollowerSearch[self.nbFollowers.get()]
-        min_value = s[2]
-        max_value = s[3]
-        prefix = s[4]
-        self.query_list = []
-        if prefix == MEGA:
-            for i in range(min_value, max_value+1):
-                q = ""
-                for j in range(1, 9):
-                    self.query_list.append( (i, j, prefix) )
-                    # TODO: do the concat elsewhere, from the list
-                    if q == "":
-                        q = "({}.{}{}".format(i, j, prefix)
-                    else:
-                        q += " OR {}.{}{}".format(i, j, prefix)
-                q += " OR {}{})".format(i, prefix)
-                logging.info(self.query_list)
-                yield i, q
-        else:
-            q = ""
-            nb_operands = 0
-            i = min_value
-            while i <= max_value:
-                self.query_list.append( (i, j, prefix) )
-                if q == "":
-                    q = "({}{}".format(i, prefix)
-                    original_i = i
-                else:
-                    q += " OR {}{}".format(i, prefix)
-                nb_operands += 1
-                if nb_operands > 9:
-                    q += ")"
-                    logging.info(self.query_list)
-                    yield original_i, q
-                    q = ""
-                    nb_operands = 0
-                i += 1
-
-
-
     def millions(self):
-        millionList = []
-        for x in self.millionsGen():
-            millionList.append(x)
+        s = nbFollowerSearch[self.nbFollowers.get()]
+        self.millionList = getMillionList(s[2], s[3], s[4])
         seed()
-        shuffle(millionList)
-        for x in millionList:
-            yield x
+        shuffle(self.millionList)
+        while self.millionList:
+            list10 = [ self.format_q(n,x) for n,x in list(enumerate(self.millionList[:SUB_LIST_LENGTH])) ]
+            # FIXME non sense data: return it from google scraper
+            nb = self.millionList[0][0]
+            str10 = "".join(list10)
+            logging.debug(str10)
+            for i in range(10):
+                del self.millionList[0]
+            yield nb, str10
+
+    def format_q(self, i, x):
+        if x[1] == 0:
+            decimal_part = ""
+        else:
+            decimal_part = ".{}".format(x[1])
+        if i == 0:
+            return "({}{}{} ".format(x[0], decimal_part, x[2])
+        elif i == SUB_LIST_LENGTH-1:
+            return "OR {}{}{})".format(x[0], decimal_part, x[2])
+        else:
+            return "OR {}{}{} ".format(x[0], decimal_part, x[2])
 
 
     def selectNbFollowers(self):
