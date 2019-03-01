@@ -14,11 +14,12 @@ from utils import getMillionList, KILO, MEGA
 
 # format of each element of the list: (row, column, min, max, prefix)
 nbFollowerSearch = [
-        (1, 2, 10, 99, KILO),
-        (1, 3, 100, 999, KILO),
-        (2, 1, 1, 9, MEGA),
-        (2, 2, 10, 99, MEGA),
-        (2, 3, 100, 999, MEGA)
+        (1, 1, 10, 99, KILO),
+        (1, 2, 100, 999, KILO),
+        (1, 3, 1, 4, MEGA),
+        (2, 1, 5, 9, MEGA),
+        (2, 2, 10, 49, MEGA),
+        (2, 3, 50, 99, MEGA)
         ]
 SUB_LIST_LENGTH = 10
 
@@ -199,19 +200,20 @@ class gui():
                 logging.info('cancel requested')
                 break
             self.update()
-            if url.count('/') == 4:
-                logging.info('url: {}'.format(url))
-                m = regex.match(".*gram.com/(.*)/", url)
-                if m:
-                    account = m.groups()[0]
-                    if (account, nb) not in self.big_accounts:
-                        list_elt = f"{account:30s} {nb:6s}{prefix}"
-                        self.list_res.insert(0, list_elt)
-                        self.list_res.itemconfig(0, foreground="white", bg="blue")
-                        logging.info('account: {}'.format(account))
-                        self.big_accounts.append( (account, nb) )
-                    else:
-                        logging.info(f"{account} / {nb}{prefix} already selected")
+            logging.info('url: {}'.format(url))
+
+            m = regex.match(".*gram.com/(.*)/", url)
+            if m:
+                account = m.groups()[0]
+                if (account, nb) in self.big_accounts:
+                    logging.info(f"{account} already selected")
+                else:
+                    list_elt = f"{account:30s} {nb:6s}{prefix}"
+                    self.list_res.insert(0, list_elt)
+                    self.list_res.itemconfig(0, foreground="white", bg="blue")
+                    logging.info('account: {}'.format(account))
+                    self.big_accounts.append( (account, nb) )
+
             self.lbl_count['text'] = "{} account{} found".format(
                     len(self.big_accounts),
                     's' if len(self.big_accounts)>1 else '')
