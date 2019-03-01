@@ -36,7 +36,8 @@ class GoogleScraper():
                 time.sleep(1.0 / time_cutter)
                 if self.gui.cancel_requested:
                     break
-            self.gui.update_info()
+            self.gui.lbl_info['text'] = ""
+            self.gui.update()
 
         if r.status_code >= 500:
             raise Exception(r.status_code, r.text)
@@ -64,8 +65,9 @@ class GoogleScraper():
                 m = regex.match(".*?([\.0-9]*)[mk] Followers.*", html_text_account_info)
                 if m:
                     html_text_nb_followers = m.groups()[0]
-                    print("Found: {}".format(html_text_nb_followers))
-                    links.append(html_text_account_link)
+                    logging.debug("[Regex] Nb followers: {}".format(html_text_nb_followers))
+                    elt = (html_text_account_link, html_text_account_info, html_text_nb_followers)
+                    links.append(elt)
                 else:
                     logging.error("can't find user info in SERP")
 
@@ -82,16 +84,16 @@ class GoogleScraper():
         serp_links, next_links = self.search2(url, True)
         logging.info('SERP links : %s' % serp_links)
         logging.info('next links : %s' % next_links)
-        for link in serp_links:
+        for serp_block in serp_links:
             self.micro_sleep()
-            yield link
+            yield serp_block
 
         for next_link in next_links:
             logging.debug('next link item : %s' % next_link)
             serp_links2, next_links2 = self.search2(_googleURL + next_link, False)
-            for link in serp_links2:
+            for serp_block in serp_links2:
                 self.micro_sleep()
-                yield link
+                yield serp_block
 
     def micro_sleep(self):
         r = float(random.randint(2, 4)) / 10

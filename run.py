@@ -49,7 +49,6 @@ if __name__ == '__main__':
         settings.software['version_major'],
         settings.software['version_minor'],
         settings.software['version_patch']))
-    logging.debug('Settings : {} {}'.format(settings.nb_pages_to_scrap, settings.nb_serp_results))
 
     window = gui(resolution, current_resolution)
     window.mainloop()

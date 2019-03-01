@@ -92,13 +92,11 @@ class gui():
         shuffle(self.millionList)
         while self.millionList:
             list10 = [ self.format_q(n,x) for n,x in list(enumerate(self.millionList[:SUB_LIST_LENGTH])) ]
-            # FIXME non sense data: return it from google scraper
-            nb = self.millionList[0][0]
             str10 = "".join(list10)
             logging.debug(str10)
             for i in range(10):
                 del self.millionList[0]
-            yield nb, str10
+            yield str10
 
     def format_q(self, i, x):
         if x[1] == 0:
@@ -172,12 +170,12 @@ class gui():
         self.big_accounts = []
         google_scraper = GoogleScraper(self, 10)
 
-        for nb,q in self.millions():
+        for q in self.millions():
             if self.cancel_requested:
                 logging.info('cancel requested')
                 break
             try:
-                self.searchMillion(nb, q, google_scraper)
+                self.searchMillion(q, google_scraper)
             except Exception as e:
                 # most often, a captcha error
                 logging.fatal(e)
@@ -186,14 +184,14 @@ class gui():
         logging.info('BIG ACCOUNTS FOUND: {}'.format(len(self.big_accounts)))
 
 
-    def searchMillion(self, nb, q, google_scraper):
+    def searchMillion(self, q, google_scraper):
         kw = "{} {} Followers -tag -explore".format(self.txt.get(), q)
         logging.info('searching: {}'.format(kw))
-        self.update_info(nb)
+        self.lbl_info['text'] = "Searching accounts..."
         self.update()
 
         serp = google_scraper.search(kw, self.url_to_search)
-        for url in serp:
+        for url, info, nb in serp:
             if self.cancel_requested:
                 logging.info('cancel requested')
                 break
@@ -216,15 +214,6 @@ class gui():
 
     def mainloop(self):
         self.window.mainloop()
-
-
-    def update_info(self, n=None):
-        if n:
-            s = nbFollowerSearch[self.nbFollowers.get()]
-            self.lbl_info['text'] = "Searching accounts with {}{} followers".format(n, s[4])
-        else:
-            self.lbl_info['text'] = ""
-        self.update()
 
 
     def update(self):
