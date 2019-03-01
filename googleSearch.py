@@ -1,13 +1,14 @@
 import time
 import random
-import sys
 import requests
-from unidecode import unidecode
 from lxml import html
 import logging
+import regex
+
+from utils import isAccount
 import settings
 
-_googleURL = 'https://google.com/'
+_googleURL = 'https://www.google.com/'
 time_cutter = 10
 
 # ===================================================================================
@@ -21,6 +22,7 @@ class GoogleScraper():
     def search2(self, googleURL, nextLinksNeeded):
         r = requests.get(googleURL, headers=settings.headers)
         logging.info('[{}] {}'.format(r.status_code, googleURL))
+        logging.debug(r.text)
 
         # be nice with google...
         if self.starting_search:
@@ -43,18 +45,33 @@ class GoogleScraper():
 
         links = []
         tree = html.fromstring(r.content)
-        res = tree.xpath('//div[@class="g"]/h3/a/@href')
-        for link in res:
-            logging.debug('google link #1 : %s' % link)
-            pos = link.find('&sa=')
-            if pos > 0:
-                link = link[7:pos]
-                if link[:4] == 'http':
-                    logging.debug('google link #2 : %s' % link)
-                    links.append(link)
-            else:
-                logging.error("can't parse google URL")
-                return False
+        res = tree.xpath('//div[@class="g"]/div[@class="s"]')
+        for e in res:
+            html_text_account_info = ''
+            html_text_account_link = ''
+            for child in e.getchildren():
+                logging.debug("tag: {}    items:{}".format(child.tag, child.items()))
+                if child.tag == 'span':
+                    html_text_account_info = child.text_content()
+                elif child.tag == 'div':
+                    child2 = child.getchildren()[0]
+                    logging.debug(child2.tag)
+                    html_text_account_link = child2.text
+            logging.info("account link: {}".format(html_text_account_link))
+            logging.info("account info: {}".format(html_text_account_info))
+            if not isAccount(html_text_account_link):
+                logging.info("Not an account link: ignored")
+            elif html_text_account_info and html_text_account_link:
+                html_text_account_info = html_text_account_info.replace('\n', '')
+                m = regex.match(".*?([\.0-9]*)[mk] [fF]ollowers.*", html_text_account_info)
+                if m:
+                    html_text_nb_followers = m.groups()[0]
+                    logging.info("[Regex] Nb followers: {}".format(html_text_nb_followers))
+                    elt = (html_text_account_link, html_text_account_info, html_text_nb_followers)
+                    links.append(elt)
+                    logging.info("User selected")
+                else:
+                    logging.info("User ignored")
 
         if nextLinksNeeded:
             next_links = tree.xpath('//div[@id="foot"]/table[@id="nav"]/tr/td/a[@class="fl"]/@href')
@@ -69,17 +86,17 @@ class GoogleScraper():
         serp_links, next_links = self.search2(url, True)
         logging.info('SERP links : %s' % serp_links)
         logging.info('next links : %s' % next_links)
-        for link in serp_links:
+        for serp_block in serp_links:
             self.micro_sleep()
-            yield link
+            yield serp_block
 
         for next_link in next_links:
             logging.debug('next link item : %s' % next_link)
             serp_links2, next_links2 = self.search2(_googleURL + next_link, False)
-            for link in serp_links2:
+            for serp_block in serp_links2:
                 self.micro_sleep()
-                yield link
+                yield serp_block
 
     def micro_sleep(self):
-        r = float(random.randint(1, 10)) / 10
+        r = float(random.randint(2, 4)) / 10
         time.sleep(r)

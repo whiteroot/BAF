@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 
-from gui import gui
-import settings
-
 import sys
-import tldextract
 import logging
 import tempfile
-from utils import get_tld_cache_file
 from platform import system
+
+from gui import gui
+import settings
 
 
 if __name__ == '__main__':
@@ -37,6 +35,10 @@ if __name__ == '__main__':
                 print ("unknown resolution : %s" % (sys.argv[i+1]))
                 sys.exit(1)
             i += 2
+        elif sys.argv[i] in ('-h', '--help'):
+            print("usage:")
+            print(f"{sys.argv[0]} [--console|--tty] [--level debug] [--resolution small|medium|large]")
+            sys.exit()
         else:
             print ("unknown argument : %s" % (sys.argv[i]))
             sys.exit(1)
@@ -51,14 +53,6 @@ if __name__ == '__main__':
         settings.software['version_major'],
         settings.software['version_minor'],
         settings.software['version_patch']))
-    logging.debug('Settings : {} {}'.format(settings.nb_pages_to_scrap, settings.nb_serp_results))
 
-    te = tldextract.TLDExtract(cache_file=get_tld_cache_file())
-    try:
-        ignored_sites = [te(line.rstrip('\n')).registered_domain for line in open('ignored_sites.txt')]
-        logging.info('ignored sites : %s', ignored_sites)
-    except:
-        ignored_sites = []
-
-    window = gui(resolution, current_resolution, ignored_sites)
+    window = gui(resolution, current_resolution)
     window.mainloop()
