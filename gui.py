@@ -1,6 +1,7 @@
 import os
 import logging
 import tempfile
+import webbrowser
 from random import shuffle, seed
 
 import regex
@@ -81,10 +82,20 @@ class gui():
         self.list_res = Listbox(self.window, width=int(tk_width),
                 height=int(tk_height * 0.75), font=("Courier", 10, "bold"))
         self.list_res.grid(column=1, row=30, padx=80, pady=3, columnspan=3)
+        self.list_res.bind('<<ListboxSelect>>', self.list_click)
 
         self.cancel_requested = False
         self.big_accounts = []
         self.update()
+
+
+    def list_click(self, event):
+        cur_line = self.list_res.get(event.widget.curselection())
+        logging.debug(f"line clicked: {cur_line}")
+        cur_account = cur_line[:30].strip()
+        url = f"https://www.instagram.com/{cur_account}/"
+        logging.info(f"visiting url: [{url}]")
+        webbrowser.get().open(url, new=2)
 
 
     def millions(self):
@@ -122,7 +133,6 @@ class gui():
             messagebox.showinfo("Info", "No account to export!")
         else:
             def_name = "{}.csv".format(self.txt.get().replace(' ', '-').replace('(', '').replace(')', '').lower())
-            #export_file = filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("csv files","*.csv"),("all files","*.*")))
             export_file = filedialog.asksaveasfilename(initialdir = getHomeDir(), title = "Save file", initialfile=def_name, defaultextension=".csv")
             if not export_file:
                 return
