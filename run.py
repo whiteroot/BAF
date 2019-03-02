@@ -48,7 +48,9 @@ if __name__ == '__main__':
         dir_sep = '\\' if system() == 'Windows' else '/'
         _logfilename = temp_dir + dir_sep + _logfilename
 
-    logging.basicConfig(format='%(asctime)s [%(filename)s] [%(funcName)s:%(lineno)d] [%(levelname)s] %(message)s', filename=_logfilename, level=_loglevel, filemode='w')
+    logging.basicConfig(format='%(asctime)s [%(filename)s] [%(funcName)s:%(lineno)d] [%(levelname)s] %(message)s',
+            handlers=[ logging.FileHandler(_logfilename, 'w', 'utf-8') ],
+            level=_loglevel)
     logging.info('Starting B.A.F version {}.{}.{}'.format(
         settings.software['version_major'],
         settings.software['version_minor'],
