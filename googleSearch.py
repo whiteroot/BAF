@@ -18,6 +18,8 @@ class GoogleScraper():
         self.gui = gui
         self.pause = pause
         self.starting_search = True
+        s = gui.nbFollowerSearch[gui.nbFollowers.get()]
+        self.prefix = s[4]
 
     def search2(self, googleURL, nextLinksNeeded):
         r = requests.get(googleURL, headers=settings.headers)
@@ -63,7 +65,7 @@ class GoogleScraper():
                 logging.info("Not an account link: ignored")
             elif html_text_account_info and html_text_account_link:
                 html_text_account_info = html_text_account_info.replace('\n', '')
-                m = regex.match(".*?([\.0-9]*)[mk] [fF]ollowers.*", html_text_account_info)
+                m = regex.match(f".*?([\.0-9]*)[{self.prefix.lower()}{self.prefix.upper()}] [fF]ollowers.*", html_text_account_info)
                 if m:
                     html_text_nb_followers = m.groups()[0]
                     logging.info("[Regex] Nb followers: {}".format(html_text_nb_followers))
