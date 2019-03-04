@@ -19,6 +19,8 @@ class GoogleScraper():
         self.pause = pause
         self.starting_search = True
         s = gui.nbFollowerSearch[gui.nbFollowers.get()]
+        self.min_value = s[2]
+        self.max_value = s[3]
         self.prefix = s[4]
 
     def search2(self, googleURL, nextLinksNeeded):
@@ -68,10 +70,13 @@ class GoogleScraper():
                 m = regex.match(f".*?([\.0-9]*)[{self.prefix.lower()}{self.prefix.upper()}] [fF]ollowers.*", html_text_account_info)
                 if m:
                     html_text_nb_followers = m.groups()[0]
-                    logging.info("[Regex] Nb followers: {}".format(html_text_nb_followers))
-                    elt = (html_text_account_link, html_text_account_info, html_text_nb_followers)
-                    links.append(elt)
-                    logging.info("User selected")
+                    logging.info("[Regex] Nb followers: {}{}".format(html_text_nb_followers, self.prefix))
+                    if self.min_value <= float(html_text_nb_followers) <= self.max_value:
+                        elt = (html_text_account_link, html_text_account_info, html_text_nb_followers)
+                        links.append(elt)
+                        logging.info("User selected")
+                    else:
+                        logging.info("not in interval: ignored")
                 else:
                     logging.info("User ignored")
 
