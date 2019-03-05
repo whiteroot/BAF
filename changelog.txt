@@ -1,3 +1,8 @@
+v1.2
+click list => open in browser
+add "save as" dialbox
+check the number of followers is in the selected interval
+
 v1.1
 add search of accounts with thousands followers
 
