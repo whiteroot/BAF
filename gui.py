@@ -89,11 +89,15 @@ class gui():
 
 
     def list_click(self, event):
-        cur_line = self.list_res.get(event.widget.curselection())
+        try:
+            cur_line = self.list_res.get(event.widget.curselection())
+        except Exception as e:
+            # we are not in list
+            return
         logging.debug(f"line clicked: {cur_line}")
         cur_account = cur_line[:30].strip()
         url = f"https://www.instagram.com/{cur_account}/"
-        logging.info(f"visiting url: [{url}]")
+        logging.info(f"visiting url: {url}")
         webbrowser.get().open(url, new=2)
 
 
@@ -150,7 +154,6 @@ class gui():
                     f.write("{}{}".format(y, prefix))
                     f.write('\n')
                     nb_lines += 1
-                messagebox.showinfo("Info", "%d big accounts exported in %s" % (nb_lines, export_file))
 
 
     def toggle(self):
