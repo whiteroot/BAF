@@ -43,12 +43,16 @@ if __name__ == '__main__':
             print ("unknown argument : %s" % (sys.argv[i]))
             sys.exit(1)
 
-    if _logfilename != '':
+    if _logfilename == '':
+        logging.basicConfig(format='%(asctime)s [%(filename)s] [%(funcName)s:%(lineno)d] [%(levelname)s] %(message)s',
+                level=_loglevel)
+    else:
         temp_dir = tempfile.gettempdir()
         dir_sep = '\\' if system() == 'Windows' else '/'
         _logfilename = temp_dir + dir_sep + _logfilename
+        logging.basicConfig(format='%(asctime)s [%(filename)s] [%(funcName)s:%(lineno)d] [%(levelname)s] %(message)s',
+                handlers=[ logging.FileHandler(_logfilename, 'w', 'utf-8') ], level=_loglevel)
 
-    logging.basicConfig(format='%(asctime)s [%(filename)s] [%(funcName)s:%(lineno)d] [%(levelname)s] %(message)s', filename=_logfilename, level=_loglevel, filemode='w')
     logging.info('Starting B.A.F version {}.{}.{}'.format(
         settings.software['version_major'],
         settings.software['version_minor'],

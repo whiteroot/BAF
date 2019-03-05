@@ -1,19 +1,22 @@
 import os
 import logging
 import tempfile
+import webbrowser
 from random import shuffle, seed
 
 import regex
 from tkinter import *
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 from tkinter.ttk import Progressbar
 
 from googleSearch import GoogleScraper
 import settings
-from utils import getMillionList, KILO, MEGA
+from utils import getMillionList, KILO, MEGA, getHomeDir
 
+
+class gui():
 # format of each element of the list: (row, column, min, max, prefix)
-nbFollowerSearch = [
+    nbFollowerSearch = [
         (1, 1, 10, 99, KILO),
         (1, 2, 100, 999, KILO),
         (1, 3, 1, 4, MEGA),
@@ -21,10 +24,7 @@ nbFollowerSearch = [
         (2, 2, 10, 49, MEGA),
         (2, 3, 50, 99, MEGA)
         ]
-SUB_LIST_LENGTH = 10
-
-
-class gui():
+    SUB_LIST_LENGTH = 10
 
     def __init__(self, resolution, current_resolution):
         self.url_to_search = 'instagram.com'
@@ -65,7 +65,7 @@ class gui():
         self.nbFollowers = IntVar()
         self.rbNbFollowers = []
         i = 0
-        for x, y, min_value, max_value, prefix in nbFollowerSearch:
+        for x, y, min_value, max_value, prefix in self.nbFollowerSearch:
             self.rbNbFollowers.append(Radiobutton(self.window, text="{} to {} {}".format(min_value, max_value, prefix),
                         variable=self.nbFollowers, value=i, command=lambda inst=self: inst.selectNbFollowers()))
             self.rbNbFollowers[i].grid(column=y, row=15+x, padx=2, pady=5)
@@ -81,19 +81,33 @@ class gui():
         self.list_res = Listbox(self.window, width=int(tk_width),
                 height=int(tk_height * 0.75), font=("Courier", 10, "bold"))
         self.list_res.grid(column=1, row=30, padx=80, pady=3, columnspan=3)
+        self.list_res.bind('<<ListboxSelect>>', self.list_click)
 
         self.cancel_requested = False
         self.big_accounts = []
         self.update()
 
 
+    def list_click(self, event):
+        try:
+            cur_line = self.list_res.get(event.widget.curselection())
+        except Exception as e:
+            # we are not in list
+            return
+        logging.debug(f"line clicked: {cur_line}")
+        cur_account = cur_line[:30].strip()
+        url = f"https://www.instagram.com/{cur_account}/"
+        logging.info(f"visiting url: {url}")
+        webbrowser.get().open(url, new=2)
+
+
     def millions(self):
-        s = nbFollowerSearch[self.nbFollowers.get()]
+        s = self.nbFollowerSearch[self.nbFollowers.get()]
         self.millionList = getMillionList(s[2], s[3], s[4])
         seed()
         shuffle(self.millionList)
         while self.millionList:
-            list10 = [ self.format_q(n,x) for n,x in list(enumerate(self.millionList[:SUB_LIST_LENGTH])) ]
+            list10 = [ self.format_q(n,x) for n,x in list(enumerate(self.millionList[:self.SUB_LIST_LENGTH])) ]
             str10 = "".join(list10)
             logging.debug(str10)
             for i in range(10):
@@ -107,7 +121,7 @@ class gui():
             decimal_part = ".{}".format(x[1])
         if i == 0:
             return "({}{}{} ".format(x[0], decimal_part, x[2])
-        elif i == SUB_LIST_LENGTH-1:
+        elif i == self.SUB_LIST_LENGTH-1:
             return "OR {}{}{})".format(x[0], decimal_part, x[2])
         else:
             return "OR {}{}{} ".format(x[0], decimal_part, x[2])
@@ -121,10 +135,12 @@ class gui():
         if len(self.big_accounts) == 0:
             messagebox.showinfo("Info", "No account to export!")
         else:
-            temp_dir = tempfile.gettempdir()
-            export_file = "{}{}baf.{}.csv".format(temp_dir, os.sep, self.txt.get().replace(' ', '-'))
+            def_name = "{}.csv".format(self.txt.get().replace(' ', '-').replace('(', '').replace(')', '').lower())
+            export_file = filedialog.asksaveasfilename(initialdir = getHomeDir(), title = "Save file", initialfile=def_name, defaultextension=".csv")
+            if not export_file:
+                return
             logging.debug('export file : %s', export_file)
-            s = nbFollowerSearch[self.nbFollowers.get()]
+            s = self.nbFollowerSearch[self.nbFollowers.get()]
             prefix = s[4]
             with open(export_file, 'w') as f:
                 f.write('account')
@@ -138,7 +154,6 @@ class gui():
                     f.write("{}{}".format(y, prefix))
                     f.write('\n')
                     nb_lines += 1
-                messagebox.showinfo("Info", "%d big accounts exported in %s" % (nb_lines, export_file))
 
 
     def toggle(self):
@@ -191,7 +206,7 @@ class gui():
         logging.info('searching: {}'.format(kw))
         self.lbl_info['text'] = "Searching accounts..."
         self.update()
-        s = nbFollowerSearch[self.nbFollowers.get()]
+        s = self.nbFollowerSearch[self.nbFollowers.get()]
         prefix = s[4]
 
         serp = google_scraper.search(kw, self.url_to_search)

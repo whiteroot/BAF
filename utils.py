@@ -1,6 +1,17 @@
+import os
+import platform
+
 KILO = 'k'
 MEGA = 'M'
 
+
+def getHomeDir():
+    if platform.system() == 'Linux':
+        return os.environ.get('HOME')
+    elif platform.system() == 'Windows':
+        return os.environ.get('UserProfile')
+    else:
+        return ''
 
 def getMillionList(min_value, max_value, prefix):
     query_list = []
